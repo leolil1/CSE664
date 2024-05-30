@@ -211,9 +211,39 @@ module Controller(
 	stage<=2'b10;
 	end
     end
-	    
-    4'b0010:begin
-	//Add instruction.  
+
+    //NOP. For this instruction, only thing we do is increment the PC by 1.
+    4'b0000:begin  
+  	LoadIR<=0; 
+	IncPC<=1; 
+	SelPC<=0; 
+	LoadPC<=0; 
+	LoadReg<=0;
+    	DumpReg<=0;          
+	LoadAcc<=0;
+	SelAcc<=2'b00;
+	SelALU<=0;
+        SelReg<=Opcode[3:0];  
+	stage<=2'b10; 
+    end
+
+    //HALT. For this instruction, we dont do anything. Not even incrementing PC.
+    4'b1111:begin  
+  	LoadIR<=0; 
+	IncPC<=0; 
+	SelPC<=0; 
+	LoadPC<=0; 
+	LoadReg<=0;
+    	DumpReg<=0;          
+	LoadAcc<=0;
+	SelAcc<=2'b00;
+	SelALU<=0;
+        SelReg<=Opcode[3:0];  
+	stage<=2'b10; 
+    end
+
+    //Add instruction
+    4'b0010:begin 
   	LoadIR<=0; 
 	IncPC<=0; 
 	SelPC<=0; 
