@@ -11,7 +11,8 @@ module Controller(
   output reg LoadIR, IncPC, SelPC, LoadPC, LoadReg, DumpReg, LoadAcc,
   output reg [1:0] SelAcc,
   output reg [3:0] SelALU,
-  output reg [3:0] SelReg
+  output reg [3:0] SelReg,
+  output reg [3:0] RegNumber
 );
   //reg [3:0] count;
   reg [1:0] stage;
@@ -26,6 +27,7 @@ module Controller(
       SelAcc<=2'b0;
       SelALU<=4'b0;
       SelReg<=4'b0;
+      RegNumber<=4'b0;
     end
 
     //stage 0 block.
@@ -43,6 +45,7 @@ module Controller(
 	SelAcc<=0;
 	SelALU<=0;
         SelReg<=0;
+	RegNumber<=0;
   	stage<=2'b01;         //Once instruction is loaded, we now move on to stage 1.
 	end
    //stage 1 block.
@@ -63,6 +66,7 @@ module Controller(
 	SelALU<=0;
         SelReg<=Opcode[3:0];  //Later in the CPU module, we can do something like
 	//registers[SelReg] which will select registers according to SelReg.
+	RegNumber<=Opcode[7:4];
 	stage<=2'b10; 
     end
 	
@@ -78,6 +82,7 @@ module Controller(
 	SelAcc<=2'b00;
 	SelALU<=0;
         SelReg<=Opcode[3:0];  
+	RegNumber<=Opcode[7:4];
 	stage<=2'b10; 
     end
 	
