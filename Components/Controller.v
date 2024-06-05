@@ -11,10 +11,9 @@ module Controller(
   output reg LoadIR, IncPC, SelPC, LoadPC, LoadReg, DumpReg, LoadAcc,
   output reg [1:0] SelAcc,
   output reg [3:0] SelALU,
-  output reg [3:0] SelReg,
   output reg [3:0] RegNumber
 );
-  //reg [3:0] count;
+
   reg [1:0] stage;
 
   //always block to execute following in either reset==1 or positive clock edge
@@ -26,7 +25,6 @@ module Controller(
       LoadIR<=0; IncPC<=0; SelPC<=0; LoadPC<=0; LoadReg<=0; DumpReg<=0; LoadAcc<=0;
       SelAcc<=2'b0;
       SelALU<=4'b0;
-      SelReg<=4'b0;
       RegNumber<=4'b0;
     end
 
@@ -44,7 +42,6 @@ module Controller(
 	LoadAcc<=0;
 	SelAcc<=0;
 	SelALU<=0;
-        SelReg<=0;
 	RegNumber<=0;
   	stage<=2'b01;         //Once instruction is loaded, we now move on to stage 1.
 	end
@@ -52,7 +49,7 @@ module Controller(
    //In this stage, we are generating different control signals based on the Opcode.
    //So there will be many different case statements.
    else if (stage==2'b01)begin
-    case(Opcode)
+    case(Opcode[7:4])
     //Load Reg to ACC.
     4'b0100:begin  
   	LoadIR<=0; 
@@ -64,9 +61,7 @@ module Controller(
 	LoadAcc<=0;
 	SelAcc<=2'b00;
 	SelALU<=0;
-        SelReg<=Opcode[3:0];  //Later in the CPU module, we can do something like
-	//registers[SelReg] which will select registers according to SelReg.
-	RegNumber<=Opcode[7:4];
+	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
     end
 	
@@ -80,14 +75,13 @@ module Controller(
     	DumpReg<=0;
 	LoadAcc<=1;        //Turn on this bit. Check the ACC code.
 	SelAcc<=2'b00;
-	SelALU<=0;
-        SelReg<=Opcode[3:0];  
-	RegNumber<=Opcode[7:4];
+	SelALU<=0; 
+	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
     end
 	
      //Load Immediate to ACC.
-     4'b0101:begin  
+     4'b1101:begin  
   	LoadIR<=0; 
 	IncPC<=1; 
 	SelPC<=0; 
@@ -120,7 +114,7 @@ module Controller(
 	LoadIR<=0; 
 	IncPC<=1; 
 	SelPC<=0;       
-	LoadPC<=1;      
+	LoadPC<=0;      
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
@@ -131,7 +125,7 @@ module Controller(
     end
 
     //Jump on Zero. Jump Immediate.
-    4'b0110:begin
+    4'b0111:begin
 	if(Zero_Carry==0)begin  
   	LoadIR<=0; 
 	IncPC<=0; 
@@ -149,7 +143,7 @@ module Controller(
 	LoadIR<=0; 
 	IncPC<=1; 
 	SelPC<=0;       
-	LoadPC<=1;      
+	LoadPC<=0;      
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
@@ -178,7 +172,7 @@ module Controller(
 	LoadIR<=0; 
 	IncPC<=1; 
 	SelPC<=0;       
-	LoadPC<=1;      
+	LoadPC<=0;      
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
@@ -207,7 +201,7 @@ module Controller(
 	LoadIR<=0; 
 	IncPC<=1; 
 	SelPC<=0;       
-	LoadPC<=1;      
+	LoadPC<=0;      
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
@@ -227,8 +221,7 @@ module Controller(
     	DumpReg<=0;          
 	LoadAcc<=0;
 	SelAcc<=2'b00;
-	SelALU<=0;
-        SelReg<=Opcode[3:0];  
+	SelALU<=0;  
 	stage<=2'b10; 
     end
 
@@ -242,22 +235,82 @@ module Controller(
     	DumpReg<=0;          
 	LoadAcc<=0;
 	SelAcc<=2'b00;
-	SelALU<=0;
-        SelReg<=Opcode[3:0];  
+	SelALU<=0; 
 	stage<=2'b10; 
     end
 
     //Add instruction
-    4'b0010:begin 
+    4'b0001:begin 
   	LoadIR<=0; 
-	IncPC<=0; 
+	IncPC<=1; 
 	SelPC<=0; 
-	LoadPC<=1; 
+	LoadPC<=0; 
 	LoadReg<=0;
 	DumpReg<=1;
 	LoadAcc<=0;
 	SelAcc<=0;
-	SelALU<=4'b0001;   //I'm assuming SelALU for ADD is 0001. Need to find this info from Andrew/James' code.
+	SelALU<=4'b0000;   //ALU Opcode is from alu_2.v module.
+	RegNumber<=Opcode[3:0];
+	stage<=2'b10; 
+    end
+
+    //Sub instruction
+    4'b0010:begin 
+  	LoadIR<=0; 
+	IncPC<=1; 
+	SelPC<=0; 
+	LoadPC<=0; 
+	LoadReg<=0;
+	DumpReg<=1;
+	LoadAcc<=0;
+	SelAcc<=0;
+	SelALU<=4'b0001;   
+	RegNumber<=Opcode[3:0];
+	stage<=2'b10; 
+    end
+
+    //Nor instruction
+    4'b0011:begin 
+  	LoadIR<=0; 
+	IncPC<=1; 
+	SelPC<=0; 
+	LoadPC<=0; 
+	LoadReg<=0;
+	DumpReg<=1;
+	LoadAcc<=0;
+	SelAcc<=0;
+	SelALU<=4'b1000;   
+	RegNumber<=Opcode[3:0];
+	stage<=2'b10; 
+    end
+
+    //Below two instructions do not involve reg. Value will be coming from ACC.
+    //Then output is sent back to ACC.
+    //Right Shift instruction
+    4'b1100:begin 
+  	LoadIR<=0; 
+	IncPC<=1; 
+	SelPC<=0; 
+	LoadPC<=0; 
+	LoadReg<=0;
+	DumpReg<=0;
+	LoadAcc<=0;
+	SelAcc<=0;
+	SelALU<=4'b1100;   
+	stage<=2'b10; 
+    end
+
+    //Left Shift instruction
+    4'b1011:begin 
+  	LoadIR<=0; 
+	IncPC<=1; 
+	SelPC<=0; 
+	LoadPC<=0; 
+	LoadReg<=0;
+	DumpReg<=0;
+	LoadAcc<=0;
+	SelAcc<=0;
+	SelALU<=4'b1101;   
 	stage<=2'b10; 
     end
    
