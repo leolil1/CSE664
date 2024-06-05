@@ -1,5 +1,5 @@
-//5 inputs. 2 outputs.
-//The 5 inputs are: 1.clock singnal. 2.reset singnal. 3.Load data to register singnal. 4.Dump data from register singnal. 5. The actual data need to be stored.
+//6 inputs. 2 outputs.
+//The 6 inputs are: 1.clock singnal. 2.reset singnal. 3.Load data to register singnal. 4.Dump data from register singnal. 5.Register number. 6. The actual data need to be stored.
 //The 2 outputs are: 1.output to ALU. 2.output to the MUX which after selection could be sent to Accumulator (ACC).
 module RegisterFile(
   input clk,
@@ -7,6 +7,8 @@ module RegisterFile(
   input LoadReg,
   input DumpReg,
   input [3:0] RegNumber,       //Adding this new input. 4-bit wide. Used to indicate one of the 16 registers. ie. 0000 is register0. 0001 is register1. 1111 is register15.
+  //RegNumber should synergize with Controller. ie. user send a load instruction:0100 0001. The first 4-bit is the Load instruction Opcode. The last 4-bit is the register nunmber.
+  //Which should then be sent to here to be used.
   input [7:0] in,
   output [7:0] out,
   output [7:0] out_alu
