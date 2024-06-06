@@ -1,4 +1,4 @@
-//Live Lec 5 6.pdf is very useful when trying to figure out which modules connects to which.
+//Live Lec 5 6.pdf is very useful when trying to figure out which module connects to which.
 //Pg 44 has the full diagram. We should be good for the most part just by following that.
 module CPU(
 	input clk,
@@ -6,7 +6,7 @@ module CPU(
   	input [7:0] instruction
 );
 //
-//Bus are listed here. Really they are just wires connecting ports from one module to another.
+//Bus are listed here. Really, they are just wires connecting ports from one module to another.
 //Some are just passing 1-bit signal, so 1-bit bus. Some are passing multiple bits such as
 //signals like Opcode, SelALU... so they are multipel bits bus.
 //
@@ -21,9 +21,9 @@ wire LoadAccWire; //This is used for Controller to signal ACC to load the data t
 		  //continue to send data to ACC. It won't do anything with it.
 
 wire [3:0] ImmediateDataWire;   //This is used to for controller to send out the immedaite data.
-				//For the final product, this will be connected to MUX for both
-				//the ACC and ProgramCounter. For now thou testing, it's connected
-				//directly to the ACC "in" port.
+				//For the final product, this will be connected to MUX that goes before
+				//the ACC and ProgramCounter. For now thou testing purposes, it's
+				//connected directly to the ACC's "in" port.
 
 //
 //Instantiating all the modules below. And connecting all the ports.
