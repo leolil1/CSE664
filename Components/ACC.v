@@ -11,7 +11,7 @@ module ACC(
   reg [7:0] storage;      
   
   always @(posedge clk, reset)begin   
-    if (reset)                         /
+    if (reset)                         
       storage<=8'bz;
     else if(LoadAcc)
       storage<=in;
