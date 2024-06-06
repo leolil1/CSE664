@@ -20,9 +20,14 @@ module Controller(
   always @(posedge clk, reset)begin
     //reset block. reset everything to 0.
     if (reset==1)begin
-      //count<=4'b0;
       stage<=2'b00;
-      LoadIR<=0; IncPC<=0; SelPC<=0; LoadPC<=0; LoadReg<=0; DumpReg<=0; LoadAcc<=0;
+      LoadIR<=0; 
+      IncPC<=0; 
+      SelPC<=0; 
+      LoadPC<=0; 	    
+      LoadReg<=0; 
+      DumpReg<=0; 
+      LoadAcc<=0;
       SelAcc<=2'b0;
       SelALU<=4'b0;
       RegNumber<=4'b0;
@@ -34,15 +39,15 @@ module Controller(
    if (stage==2'b00)begin
 	//fetch instruction
   	LoadIR<=1;             //Send out the load instruction signal to IR.
-	IncPC<=1;              //Incrementing Program Counter here? or no?
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-	DumpReg<=1;
+	//IncPC<=1;              //Incrementing Program Counter here? or no?
+	//SelPC<=0; 
+	//LoadPC<=0; 
+	//LoadReg<=0;
+	//DumpReg<=1;
 	LoadAcc<=0;
-	SelAcc<=0;
-	SelALU<=0;
-	RegNumber<=0;
+	//SelAcc<=0;
+	//SelALU<=0;
+	//RegNumber<=0;
   	stage<=2'b01;         //Once instruction is loaded, we now move on to stage 1.
 	end
    //stage 1 block.
@@ -83,15 +88,16 @@ module Controller(
      //Load Immediate to ACC.
      4'b1101:begin  
   	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	SelAcc<=2'b01;  //So I'm thinking IR needs to have the Immediate_data output be connected to the first MUX for ACC, and also the MUX to program counter. 
+	//IncPC<=1; 
+	//SelPC<=0; 
+	//LoadPC<=0; 
+	//LoadReg<=0;
+    	//DumpReg<=0;
+	LoadAcc<=1;
+	//SelAcc<=2'b01;  //So I'm thinking IR needs to have the Immediate_data output be connected to the first MUX for ACC, and also the MUX to program counter. 
 	//Then depends on the selection, the immedaite_data can be accepted or ignored. Here, it'll be accepted.
-	SelALU<=0;  
+	//SelALU<=0;
+	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
     end
 
