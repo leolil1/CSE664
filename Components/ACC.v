@@ -4,17 +4,26 @@ module ACC(
   input reset,
   input LoadAcc,
   input DumpAcc,
-  input [7:0] in,
+  input [7:0] in_alu,      //If we look at the Data Path diagram, and includes two MUXs to ACC design,
+  input [7:0] in_reg,      //then these are all the inputs and ouputs for ACC.
+  input [7:0] in_imm,
+  input SelAcc0,
+  input SelAcc1,
   output [7:0] out_reg,
   output [7:0] out_alu
 );
-  reg [7:0] storage;      
+  reg [7:0] storage;
+  wire [7:0] MUXOutData;
+  wire [7:0] MUXOutData2;     
   
+  MUX MUX1 (.a(in_imm), .b(in_reg), .sel(SelAcc0), .y(MUXOutData));
+  MUX MUX2 (.a(MUXOutData), .b(in_alu), .sel(SelAcc1), .y(MUXOutData2));
+	
   always @(posedge clk, reset)begin   
     if (reset)                         
       storage<=8'bz;
     else if(LoadAcc)
-      storage<=in;
+      storage<=MUXOutData2;
   end
   
   assign out_reg=DumpAcc ? storage : 8'bz;    //output the data in storage to Reg if Dump ACC singnal is ture. Otherwise continue to send high impedence.
