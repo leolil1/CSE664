@@ -8,8 +8,9 @@ module Controller(
   input Zero_Carry,    //Lecture 6 Video "Instruction Set" says it's the ACC upper bit, 1 or 0, indicates
   //if it's Zero or Carry. Yet if you look at the Datapath diagram, it shows Zero or Carry singnal coming
   //out of ALU... So I'm not sure exactly where this input signal is gonne be coming from.
-  output reg LoadIR, IncPC, SelPC, LoadPC, LoadReg, DumpReg, LoadAcc,
-  output reg [1:0] SelAcc,
+  output reg LoadIR, IncPC, SelPC, LoadPC, LoadReg, DumpReg, LoadAcc, DumpAcc,
+  output reg SelAcc0,
+  output reg SelAcc1,
   output reg [3:0] SelALU,
   output reg [3:0] RegNumber
 );
@@ -24,11 +25,13 @@ module Controller(
       LoadIR<=0; 
       IncPC<=0; 
       SelPC<=0; 
-      LoadPC<=0; 	    
+      LoadPC<=0; 
       LoadReg<=0; 
       DumpReg<=0; 
       LoadAcc<=0;
-      SelAcc<=2'b0;
+      DumpAcc<=0;
+      SelAcc0<=1'bz;
+      SelAcc0<=1'bz;
       SelALU<=4'b0;
       RegNumber<=4'b0;
     end
@@ -45,6 +48,7 @@ module Controller(
 	//LoadReg<=0;
 	//DumpReg<=1;
 	LoadAcc<=0;
+	DumpAcc<=0;
 	//SelAcc<=0;
 	//SelALU<=0;
 	//RegNumber<=0;
@@ -63,8 +67,10 @@ module Controller(
 	LoadPC<=0; 
 	LoadReg<=0;
     	DumpReg<=1;          //Turn on this bit. Check the Register code. This should be to dump data stored in register to ACC.
-	LoadAcc<=0;
-	SelAcc<=2'b00;
+	LoadAcc<=1;          //Turn on this Write Enable bit. So reg data can be written to ACC.
+	DumpAcc<=0;
+	SelAcc0<=1;          //Turn on this bit to select reg as the input.
+	SelAcc1<=0;          //Leave this bit off so reg will continue to be selected in 2nd MUX.
 	SelALU<=0;
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
@@ -78,8 +84,10 @@ module Controller(
 	LoadPC<=0; 
 	LoadReg<=0;
     	DumpReg<=0;
-	LoadAcc<=1;        //Turn on this bit. Check the ACC code.
-	SelAcc<=2'b00;
+	LoadAcc<=0;       
+	DumpAcc<=1;          //Turn on this bit to dump data stored in ACC to Reg.
+	SelAcc0<=0;
+	SelAcc1<=0;
 	SelALU<=0; 
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
@@ -93,10 +101,11 @@ module Controller(
 	//LoadPC<=0; 
 	//LoadReg<=0;
     	//DumpReg<=0;
-	LoadAcc<=1;
-	//SelAcc<=2'b01;  //So I'm thinking IR needs to have the Immediate_data output be connected to the first MUX for ACC, and also the MUX to program counter. 
-	//Then depends on the selection, the immedaite_data can be accepted or ignored. Here, it'll be accepted.
-	//SelALU<=0;
+	LoadAcc<=1;       //Turn on this Write Enable bit so data can be written to ACC to store.
+	DumpAcc<=0;
+	SelAcc0<=0;       //Leave both Sel as 0, so imm can be selected as input for ACC to store.
+	SelAcc1<=0;
+	//SelALU<=0;  
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
     end
@@ -111,7 +120,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=2'b00;  
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;  
 	SelALU<=0;  
 	stage<=2'b10; 
     	end
@@ -124,7 +135,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=2'b00;  
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;  
 	SelALU<=0;  
 	stage<=2'b10;
 	end
@@ -140,7 +153,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=2'b00;  
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;  
 	SelALU<=0;  
 	stage<=2'b10; 
     	end
@@ -153,7 +168,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=2'b00;  
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0; 
 	SelALU<=0;  
 	stage<=2'b10;
 	end
@@ -169,7 +186,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=2'b00;  
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;  
 	SelALU<=0;  
 	stage<=2'b10; 
     	end
@@ -182,7 +201,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=2'b00;  
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;  
 	SelALU<=0;  
 	stage<=2'b10;
 	end
@@ -198,7 +219,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=2'b00;  
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;  
 	SelALU<=0;  
 	stage<=2'b10; 
     	end
@@ -211,7 +234,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=2'b00;  
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;  
 	SelALU<=0;  
 	stage<=2'b10;
 	end
@@ -226,7 +251,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;          
 	LoadAcc<=0;
-	SelAcc<=2'b00;
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;
 	SelALU<=0;  
 	stage<=2'b10; 
     end
@@ -240,7 +267,9 @@ module Controller(
 	LoadReg<=0;
     	DumpReg<=0;          
 	LoadAcc<=0;
-	SelAcc<=2'b00;
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;
 	SelALU<=0; 
 	stage<=2'b10; 
     end
@@ -254,7 +283,9 @@ module Controller(
 	LoadReg<=0;
 	DumpReg<=1;
 	LoadAcc<=0;
-	SelAcc<=0;
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;
 	SelALU<=4'b0000;   //ALU Opcode is from alu_2.v module.
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
@@ -269,7 +300,9 @@ module Controller(
 	LoadReg<=0;
 	DumpReg<=1;
 	LoadAcc<=0;
-	SelAcc<=0;
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;
 	SelALU<=4'b0001;   
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
@@ -284,7 +317,9 @@ module Controller(
 	LoadReg<=0;
 	DumpReg<=1;
 	LoadAcc<=0;
-	SelAcc<=0;
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;
 	SelALU<=4'b1000;   
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
@@ -301,7 +336,9 @@ module Controller(
 	LoadReg<=0;
 	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=0;
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;
 	SelALU<=4'b1100;   
 	stage<=2'b10; 
     end
@@ -315,7 +352,9 @@ module Controller(
 	LoadReg<=0;
 	DumpReg<=0;
 	LoadAcc<=0;
-	SelAcc<=0;
+	DumpAcc<=0;
+	SelAcc0<=0;
+	SelAcc1<=0;
 	SelALU<=4'b1101;   
 	stage<=2'b10; 
     end
