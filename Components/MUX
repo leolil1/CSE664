@@ -1,4 +1,4 @@
-module MUX2 (
+module MUX (
     input sel,
     input [7:0] a,
     input [7:0] b,
