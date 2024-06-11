@@ -25,6 +25,10 @@ wire [3:0] ImmediateDataWire;   //This is used to for controller to send out the
 				//the ACC and ProgramCounter. For now thou testing purposes, it's
 				//connected directly to the ACC's "in" port.
 
+wire SelAcc0Wire; //Two buses for the two MUXs before ACC register. See Data Path diagram in
+wire SelAcc1Wire; //Live Lec 5 6.pdf pg 44 to see the design.
+
+	
 //
 //Instantiating all the modules below. And connecting all the ports.
 //
@@ -32,8 +36,8 @@ wire [3:0] ImmediateDataWire;   //This is used to for controller to send out the
 IR IR1(.clk(clk), .reset(reset), .LoadIR(LoadIRWire), .instruction(instruction), .Opcode(OpcodeWire));
 
 //ACC
-ACC Acc1(.clk(clk), .reset(reset), .LoadAcc(LoadAccWire), .in(ImmediateDataWire));
+ACC Acc1(.clk(clk), .reset(reset), .LoadAcc(LoadAccWire), .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .in_imm(ImmediateDataWire));
 
 //Controller
-Controller Con1(.clk(clk), .reset(reset), .Opcode(OpcodeWire), .LoadIR(LoadIRWire), .LoadAcc(LoadAccWire), .RegNumber(ImmediateDataWire));
+Controller Con1(.clk(clk), .reset(reset), .Opcode(OpcodeWire), .LoadIR(LoadIRWire), .LoadAcc(LoadAccWire), .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .RegNumber(ImmediateDataWire));
 endmodule
