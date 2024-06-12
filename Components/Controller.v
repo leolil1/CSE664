@@ -12,6 +12,7 @@ module Controller(
   output reg SelAcc0,
   output reg SelAcc1,
   output reg [3:0] SelALU,
+  output reg [3:0] ImmediateData,
   output reg [3:0] RegNumber
 );
 
@@ -33,6 +34,7 @@ module Controller(
       SelAcc0<=1'bz;
       SelAcc0<=1'bz;
       SelALU<=4'b0;
+      ImmediateData<=4'b0;
       RegNumber<=4'b0;
     end
 
@@ -106,7 +108,8 @@ module Controller(
 	SelAcc0<=0;       //Leave both Sel as 0, so imm can be selected as input for ACC to store.
 	SelAcc1<=0;
 	//SelALU<=0;  
-	RegNumber<=Opcode[3:0];
+	ImmediateData<=Opcode[3:0];
+	RegNumber<=0;
 	stage<=2'b10; 
     end
 
