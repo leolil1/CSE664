@@ -4,12 +4,12 @@ module ACC(
   input reset,
   input LoadAcc,
   input DumpAcc,
-  input [7:0] in_alu,      //If we look at the Data Path diagram, and includes two MUXs to ACC design,
-  input [7:0] in_reg,      //then these are all the inputs and ouputs for ACC.
+  input [7:0] in_alu,      //If we look at the Data Path diagram, and includes two MUXs,
+  input [7:0] in_reg,      //then we can see all the inputs and ouputs for ACC.
   input [7:0] in_imm,
   input SelAcc0,
   input SelAcc1,
-  output [7:0] out_reg,
+  output reg [7:0] out_reg,
   output [7:0] out_alu
 );
   reg [7:0] storage;
@@ -26,6 +26,10 @@ module ACC(
       storage<=MUXOutData2;
   end
   
-  assign out_reg=DumpAcc ? storage : 8'bz;    //output the data in storage to Reg if Dump ACC singnal is ture. Otherwise continue to send high impedence.
+  always @(posedge clk)begin
+    if(DumpAcc)
+      out_reg<=storage;     		  //output the data in storage to Reg if Dump ACC singnal is ture.
+  end
+    
   assign out_alu=storage;                 //output to ALU will continuously to be sent since one of the operants of ALU is always going to come from ACC.
 endmodule
