@@ -26,6 +26,9 @@ wire DumpAccWire; //This is used for Controller to signal ACC to dump data store
 wire LoadRegWire; //This is the Write Enable for RegisterFile. Controller can use this to signal
 		  //register to write data to storage.
 
+wire DumpRegWire; //This is used for Controller to signal register to dump it's data out. The data
+		  //as of now is only sent to ACC after.
+
 wire [3:0] ImmediateDataWire;   //This is used to for controller to send out the immedaite data.
 				//For the final product, this will be connected to MUX for both
 				//the ACC and ProgramCounter. For now thou testing, it's connected
@@ -34,7 +37,10 @@ wire [3:0] ImmediateDataWire;   //This is used to for controller to send out the
 wire [7:0] Out_accDataWire;     //This is used to connect ACC to Reg. So when DumpAcc is turned on,
 				//the data stored in ACC will be sent to Reg.
 
-wire [3:0] RegNumberWire;       //This is used for controller to pass the register number to RegisterFile.
+wire [7:0] out_regDataWire;     //This is used to connect Reg to ACC. So when DumpReg is turned on,
+				//the data stored in Reg will be sent to the MUX of the ACC.
+
+wire [3:0] RegNumberWire;     //This is used for the controller to pass the register number to RegisterFile.
 
 wire SelAcc0Wire; //Two buses for the two MUXs before ACC register. See Data Path diagram in
 wire SelAcc1Wire; //Live Lec 5 6.pdf pg 44 to see the design.
@@ -46,11 +52,11 @@ wire SelAcc1Wire; //Live Lec 5 6.pdf pg 44 to see the design.
 IR IR1(.clk(clk), .reset(reset), .LoadIR(LoadIRWire), .instruction(instruction), .Opcode(OpcodeWire));
 
 //ACC
-ACC Acc1(.clk(clk), .reset(reset), .LoadAcc(LoadAccWire), .DumpAcc(DumpAccWire), .in_imm(ImmediateDataWire), .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .out_reg(Out_accDataWire));
-
+ACC Acc1(.clk(clk), .reset(reset), .LoadAcc(LoadAccWire), .DumpAcc(DumpAccWire), .in_reg(out_regDataWire), .in_imm(ImmediateDataWire), .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .out_reg(Out_accDataWire));
+	
 //RegisterFile
-RegisterFile RF1(.clk(clk), .reset(reset), .LoadReg(LoadRegWire), .RegNumber(RegNumberWire), .in(Out_accDataWire));
+RegisterFile RF1(.clk(clk), .reset(reset), .LoadReg(LoadRegWire), .DumpReg(DumpRegWire), .RegNumber(RegNumberWire), .in(Out_accDataWire), .out(out_regDataWire));
 
 //Controller
-Controller Con1(.clk(clk), .reset(reset), .Opcode(OpcodeWire), .LoadIR(LoadIRWire), .LoadReg(LoadRegWire), .LoadAcc(LoadAccWire), .DumpAcc(DumpAccWire), .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .ImmediateData(ImmediateDataWire), .RegNumber(RegNumberWire));
+Controller Con1(.clk(clk), .reset(reset), .Opcode(OpcodeWire), .LoadIR(LoadIRWire), .LoadReg(LoadRegWire), .DumpReg(DumpRegWire), .LoadAcc(LoadAccWire), .DumpAcc(DumpAccWire), .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .ImmediateData(ImmediateDataWire), .RegNumber(RegNumberWire));
 endmodule
