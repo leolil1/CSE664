@@ -64,9 +64,9 @@ module Controller(
     //Load Reg to ACC.
     4'b0100:begin  
   	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
+	//IncPC<=1; 
+	//SelPC<=0; 
+	//LoadPC<=0; 
 	LoadReg<=0;
     	DumpReg<=1;          //Turn on this bit. Check the Register code. This should be to dump data stored in register to ACC.
 	LoadAcc<=1;          //Turn on this Write Enable bit. So reg data can be written to ACC.
@@ -74,6 +74,7 @@ module Controller(
 	SelAcc0<=1;          //Turn on this bit to select reg as the input.
 	SelAcc1<=0;          //Leave this bit off so reg will continue to be selected in 2nd MUX.
 	SelALU<=0;
+	//ImmediateData<=0;
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
     end
@@ -81,16 +82,17 @@ module Controller(
     //Load ACC to Reg.
     4'b0101:begin 
   	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
+	//IncPC<=1; 
+	//SelPC<=0; 
+	//LoadPC<=0; 
+	LoadReg<=1;          //Turn on this bit so data can be written to Reg.
     	DumpReg<=0;
 	LoadAcc<=0;       
 	DumpAcc<=1;          //Turn on this bit to dump data stored in ACC to Reg.
 	SelAcc0<=0;
 	SelAcc1<=0;
-	SelALU<=0; 
+	SelALU<=0;
+	//ImmediateData<=0;
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
     end
@@ -101,13 +103,13 @@ module Controller(
 	//IncPC<=1; 
 	//SelPC<=0; 
 	//LoadPC<=0; 
-	//LoadReg<=0;
-    	//DumpReg<=0;
+	LoadReg<=0;
+    	DumpReg<=0;
 	LoadAcc<=1;       //Turn on this Write Enable bit so data can be written to ACC to store.
 	DumpAcc<=0;
 	SelAcc0<=0;       //Leave both Sel as 0, so imm can be selected as input for ACC to store.
 	SelAcc1<=0;
-	//SelALU<=0;  
+	SelALU<=0;  
 	ImmediateData<=Opcode[3:0];
 	RegNumber<=0;
 	stage<=2'b10; 
