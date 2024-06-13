@@ -5,9 +5,10 @@
 module Controller(
   input clk, reset,
   input [7:0] Opcode,
-  input Zero_Carry,    //Lecture 6 Video "Instruction Set" says it's the ACC upper bit, 1 or 0, indicates
+  input Zero,    //Lecture 6 Video "Instruction Set" says it's the ACC upper bit, 1 or 0, indicates
   //if it's Zero or Carry. Yet if you look at the Datapath diagram, it shows Zero or Carry singnal coming
   //out of ALU... So I'm not sure exactly where this input signal is gonne be coming from.
+  input Carry,
   output reg LoadIR, IncPC, SelPC, LoadPC, LoadReg, DumpReg, LoadAcc, DumpAcc,
   output reg SelAcc0,
   output reg SelAcc1,
