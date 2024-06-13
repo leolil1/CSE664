@@ -65,8 +65,8 @@ module Controller(
    //In this stage, we are generating different control signals based on the Opcode.
    //So there will be many different case statements.
    else if (stage==2'b01)begin
-    if(delay_count>0)begin
-	delay_count<=delay_count-1;
+	   if(delay_count>0)begin		//The delay block. New execution won't start until the preset
+	delay_count<=delay_count-1;		//number of cycles have gone thru.
     end
     else begin
     case(Opcode[7:4])
