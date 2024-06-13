@@ -127,7 +127,7 @@ module Controller(
 
     //Jump on Zero. Jump Reg.
     4'b0110:begin
-	if(Zero_Carry==0)begin  
+	if(Zero==1)begin  
   	LoadIR<=0; 
 	IncPC<=0; 
 	SelPC<=0;       //This should be connected to the MUX for PC. So 0 selects register as input.
@@ -160,7 +160,7 @@ module Controller(
 
     //Jump on Zero. Jump Immediate.
     4'b0111:begin
-	if(Zero_Carry==0)begin  
+	if(Zero==1)begin  
   	LoadIR<=0; 
 	IncPC<=0; 
 	SelPC<=1;       //This should be connected to the MUX for PC. So 1 selects Immediate as input.
@@ -193,7 +193,7 @@ module Controller(
 
     //Jump on Carry. Jump Reg.
     4'b1000:begin
-	if(Zero_Carry==1)begin  
+	if(Carry==1)begin  
   	LoadIR<=0; 
 	IncPC<=0; 
 	SelPC<=0;       
@@ -226,7 +226,7 @@ module Controller(
 
     //Jump on Cary. Jump Immediate.
     4'b1010:begin
-	if(Zero_Carry==1)begin  
+	if(Carry==1)begin  
   	LoadIR<=0; 
 	IncPC<=0; 
 	SelPC<=1;       
