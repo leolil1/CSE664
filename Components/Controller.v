@@ -17,6 +17,9 @@ module Controller(
 );
 
   reg [1:0] stage;
+  reg [3:0] delay_count;  //Adding a delay_count that will have a preset value. Before each execution,
+			  //the program will delay enough cycles so previous instruction have enough time to
+			  //finish execution.
 
   //always block to execute following in either reset==1 or positive clock edge
   always @(posedge clk, reset)begin
@@ -36,6 +39,7 @@ module Controller(
       SelALU<=4'b0;
       ImmediateData<=4'b0;
       RegNumber<=4'b0;
+      delay_count <= 4'b0100;  //Setting the delay to 4 cycles for now. If it's too much we can lower it.
     end
 
     //stage 0 block.
@@ -43,8 +47,8 @@ module Controller(
     //This means, later when we are putting things together, we need to connect IR to Controller.
    if (stage==2'b00)begin
 	//fetch instruction
-  	LoadIR<=1;             //Send out the load instruction signal to IR.
-	//IncPC<=1;              //Incrementing Program Counter here? or no?
+  	LoadIR<=1;             //Sent out the load instruction signal to IR.
+	//IncPC<=1;            //Incrementing Program Counter here? or no?
 	//SelPC<=0; 
 	//LoadPC<=0; 
 	//LoadReg<=0;
@@ -54,12 +58,17 @@ module Controller(
 	//SelAcc<=0;
 	//SelALU<=0;
 	//RegNumber<=0;
-  	stage<=2'b01;         //Once instruction is loaded, we now move on to stage 1.
+  	delay_count <= 4'b0100;
+	stage<=2'b01;         //Once instruction is loaded, we now move on to stage 1.
 	end
    //stage 1 block.
    //In this stage, we are generating different control signals based on the Opcode.
    //So there will be many different case statements.
    else if (stage==2'b01)begin
+    if(delay_count>0)begin
+	delay_count<=delay_count-1;
+    end
+    else begin
     case(Opcode[7:4])
     //Load Reg to ACC.
     4'b0100:begin  
@@ -74,7 +83,7 @@ module Controller(
 	SelAcc0<=1;          //Turn on this bit to select reg as the input.
 	SelAcc1<=0;          //Leave this bit off so reg will continue to be selected in 2nd MUX.
 	SelALU<=0;
-	//ImmediateData<=0;
+	ImmediateData<=0;
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
     end
@@ -92,7 +101,7 @@ module Controller(
 	SelAcc0<=0;
 	SelAcc1<=0;
 	SelALU<=0;
-	//ImmediateData<=0;
+	ImmediateData<=0;
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
     end
@@ -363,16 +372,13 @@ module Controller(
 	SelALU<=4'b1101;   
 	stage<=2'b10; 
     end
-   
    endcase
+   end
    end
 //stage 2 bloc.
 //In this stage, we'll execute. Not sure what to put here yet.
 else if (stage==2'b10)begin
 stage<=2'b00;       //Resetting stages to 0. 
 end
-
-
-
 end
 endmodule
