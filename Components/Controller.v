@@ -13,7 +13,7 @@ module Controller(
   output reg SelAcc0,
   output reg SelAcc1,
   output reg [3:0] SelALU,
-  output reg [3:0] ImmediateData,
+  output reg [7:0] ImmediateData,
   output reg [3:0] RegNumber
 );
 
@@ -38,7 +38,7 @@ module Controller(
       SelAcc0<=1'bz;
       SelAcc0<=1'bz;
       SelALU<=4'b0;
-      ImmediateData<=4'b0;
+      ImmediateData<=8'b0;
       RegNumber<=4'b0;
       delay_count <= 4'b0100;  //Setting the delay to 4 cycles for now. If it's too much we can lower it.
     end

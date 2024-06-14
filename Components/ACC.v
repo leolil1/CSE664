@@ -21,7 +21,7 @@ module ACC(
 	
   always @(posedge clk, reset)begin   
     if (reset)                         
-      storage<=8'bz;
+      storage<=8'b0;
     else if(LoadAcc)
       storage<=MUXOutData2;
   end
