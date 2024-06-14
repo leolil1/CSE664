@@ -292,15 +292,15 @@ module Controller(
     //Add instruction
     4'b0001:begin 
   	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
+	//IncPC<=1; 
+	//SelPC<=0; 
+	//LoadPC<=0; 
 	LoadReg<=0;
 	DumpReg<=1;
-	LoadAcc<=0;
+	LoadAcc<=1;
 	DumpAcc<=0;
 	SelAcc0<=0;
-	SelAcc1<=0;
+	SelAcc1<=1;
 	SelALU<=4'b0000;   //ALU Opcode is from alu_2.v module.
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
@@ -309,15 +309,15 @@ module Controller(
     //Sub instruction
     4'b0010:begin 
   	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
+	//IncPC<=1; 
+	//SelPC<=0; 
+	//LoadPC<=0; 
 	LoadReg<=0;
 	DumpReg<=1;
-	LoadAcc<=0;
+	LoadAcc<=1;
 	DumpAcc<=0;
 	SelAcc0<=0;
-	SelAcc1<=0;
+	SelAcc1<=1;
 	SelALU<=4'b0001;   
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
@@ -326,15 +326,15 @@ module Controller(
     //Nor instruction
     4'b0011:begin 
   	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
+	//IncPC<=1; 
+	//SelPC<=0; 
+	//LoadPC<=0; 
 	LoadReg<=0;
 	DumpReg<=1;
-	LoadAcc<=0;
+	LoadAcc<=1;
 	DumpAcc<=0;
 	SelAcc0<=0;
-	SelAcc1<=0;
+	SelAcc1<=1;
 	SelALU<=4'b1000;   
 	RegNumber<=Opcode[3:0];
 	stage<=2'b10; 
