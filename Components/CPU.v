@@ -2,7 +2,8 @@
 module CPU(
   input clk,
   input reset,
-  input [7:0] instruction
+  input [7:0] instruction,
+  output LoadIRSig
 );
 
 //
@@ -55,7 +56,7 @@ wire alu_carry, alu_zero;    //ALU flags
 //
 
 //InstructionRegister
-IR IR1(.clk(clk), .reset(reset), .LoadIR(LoadIRWire), .instruction(instruction), .Opcode(OpcodeWire));
+IR IR1(.clk(clk), .reset(reset), .LoadIR(LoadIRWire), .instruction(instruction), .Opcode(OpcodeWire), .LoadIRSig(LoadIRSig));
 
 //ACC
 ACC Acc1(
