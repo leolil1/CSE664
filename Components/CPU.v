@@ -28,7 +28,7 @@ wire LoadRegWire; //This is the Write Enable for RegisterFile. Controller can us
 wire DumpRegWire; //This is used for Controller to signal register to dump its data out. The data
           //as of now is only sent to ACC after.
 
-wire [3:0] ImmediateDataWire;   //This is used for the controller to send out the immediate data.
+wire [7:0] ImmediateDataWire;   //This is used for the controller to send out the immediate data.
         //For the final product, this will be connected to MUX for both
         //the ACC and ProgramCounter. For now though testing, it's connected
         //directly to the ACC "in" port.
