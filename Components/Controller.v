@@ -1,385 +1,87 @@
-//There are couple things behind the design of the Controller.
-//1.Controller should follow 3 step executions: fectch instructino, decode, execute
-//2.At each of the 3 stages, different types of output singals will be generated.
-//These signals, later, will be sent to appropriate modules like ALU, Register...
-module Controller(
-  input clk, reset,
-  input [7:0] Opcode,
-  input Zero,    //Lecture 6 Video "Instruction Set" says it's the ACC upper bit, 1 or 0, indicates
-  //if it's Zero or Carry. Yet if you look at the Datapath diagram, it shows Zero or Carry singnal coming
-  //out of ALU... So I'm not sure exactly where this input signal is gonne be coming from.
-  input Carry,
-  output reg LoadIR, IncPC, SelPC, LoadPC, LoadReg, DumpReg, LoadAcc, DumpAcc,
-  output reg SelAcc0,
-  output reg SelAcc1,
-  output reg [3:0] SelALU,
-  output reg [3:0] ImmediateData,
-  output reg [3:0] RegNumber
+module CPU(
+  input clk,
+  input reset,
+  input [7:0] instruction
 );
 
-  reg [1:0] stage;
-  reg [3:0] delay_count;  //Adding a delay_count that will have a preset value. Before each execution,
-			  //the program will delay enough cycles so previous instruction have enough time to
-			  //finish execution.
+//
+//Buses are listed here. Really they are just wires connecting ports from one module to another.
+//Some are just passing 1-bit signal, so 1-bit bus. Some are passing multiple bits such as
+//signals like Opcode, SelALU... so they are multiple bits bus.
+//
+wire [7:0] OpcodeWire; //This is used to connect InstructionRegister(IR) to Controller to pass the 8-bit 
+                       //instruction. This wire will be used to make that happen.
 
-  //always block to execute following in either reset==1 or positive clock edge
-  always @(posedge clk, reset)begin
-    //reset block. reset everything to 0.
-    if (reset==1)begin
-      stage<=2'b00;
-      LoadIR<=0; 
-      IncPC<=0; 
-      SelPC<=0; 
-      LoadPC<=0; 
-      LoadReg<=0; 
-      DumpReg<=0; 
-      LoadAcc<=0;
-      DumpAcc<=0;
-      SelAcc0<=1'bz;
-      SelAcc0<=1'bz;
-      SelALU<=4'b0;
-      ImmediateData<=4'b0;
-      RegNumber<=4'b0;
-      delay_count <= 4'b0100;  //Setting the delay to 4 cycles for now. If it's too much we can lower it.
-    end
+wire LoadIRWire; //This is used for Controller to signal IR to load another Instruction.
+                 //This wire provides the way for Controller to send that signal to IR.
 
-    //stage 0 block.
-    //In this stage, we are only fetching instructions from InstructionRegister.
-    //This means, later when we are putting things together, we need to connect IR to Controller.
-   if (stage==2'b00)begin
-	//fetch instruction
-  	LoadIR<=1;             //Sent out the load instruction signal to IR.
-	//IncPC<=1;            //Incrementing Program Counter here? or no?
-	//SelPC<=0; 
-	//LoadPC<=0; 
-	//LoadReg<=0;
-	//DumpReg<=1;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	//SelAcc<=0;
-	//SelALU<=0;
-	//RegNumber<=0;
-  	delay_count <= 4'b0100;
-	stage<=2'b01;         //Once instruction is loaded, we now move on to stage 1.
-	end
-   //stage 1 block.
-   //In this stage, we are generating different control signals based on the Opcode.
-   //So there will be many different case statements.
-   else if (stage==2'b01)begin
-	   if(delay_count>0)begin		//The delay block. New execution won't start until the preset
-	delay_count<=delay_count-1;		//number of cycles have gone thru.
-    end
-    else begin
-    case(Opcode[7:4])
-    //Load Reg to ACC.
-    4'b0100:begin  
-  	LoadIR<=0; 
-	//IncPC<=1; 
-	//SelPC<=0; 
-	//LoadPC<=0; 
-	LoadReg<=0;
-    	DumpReg<=1;          //Turn on this bit. Check the Register code. This should be to dump data stored in register to ACC.
-	LoadAcc<=1;          //Turn on this Write Enable bit. So reg data can be written to ACC.
-	DumpAcc<=0;
-	SelAcc0<=1;          //Turn on this bit to select reg as the input.
-	SelAcc1<=0;          //Leave this bit off so reg will continue to be selected in 2nd MUX.
-	SelALU<=0;
-	ImmediateData<=0;
-	RegNumber<=Opcode[3:0];
-	stage<=2'b10; 
-    end
-	
-    //Load ACC to Reg.
-    4'b0101:begin 
-  	LoadIR<=0; 
-	//IncPC<=1; 
-	//SelPC<=0; 
-	//LoadPC<=0; 
-	LoadReg<=1;          //Turn on this bit so data can be written to Reg.
-    	DumpReg<=0;
-	LoadAcc<=0;       
-	DumpAcc<=1;          //Turn on this bit to dump data stored in ACC to Reg.
-	SelAcc0<=0;
-	SelAcc1<=0;
-	SelALU<=0;
-	ImmediateData<=0;
-	RegNumber<=Opcode[3:0];
-	stage<=2'b10; 
-    end
-	
-     //Load Immediate to ACC.
-     4'b1101:begin  
-  	LoadIR<=0; 
-	//IncPC<=1; 
-	//SelPC<=0; 
-	//LoadPC<=0; 
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=1;       //Turn on this Write Enable bit so data can be written to ACC to store.
-	DumpAcc<=0;
-	SelAcc0<=0;       //Leave both Sel as 0, so imm can be selected as input for ACC to store.
-	SelAcc1<=0;
-	SelALU<=0;  
-	ImmediateData<=Opcode[3:0];
-	RegNumber<=0;
-	stage<=2'b10; 
-    end
+wire LoadAccWire; //This is used for Controller to signal ACC to load the data to its storage
+          //Think this as the Write Enable for ACC. If this signal is off, you can
+          //continue to send data to ACC. It won't do anything with it.
 
-    //Jump on Zero. Jump Reg.
-    4'b0110:begin
-	if(Zero==1)begin  
-  	LoadIR<=0; 
-	IncPC<=0; 
-	SelPC<=0;       //This should be connected to the MUX for PC. So 0 selects register as input.
-	LoadPC<=1;      //Got turn this bit on to load?
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;  
-	SelALU<=0;  
-	stage<=2'b10; 
-    	end
-	else begin
-	//if ACC is not zero, then we just need to increment PC by 1.
-	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0;       
-	LoadPC<=0;      
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;  
-	SelALU<=0;  
-	stage<=2'b10;
-	end
-    end
+wire DumpAccWire; //This is used for Controller to signal ACC to dump data stored in its storage
+          //to register.
 
-    //Jump on Zero. Jump Immediate.
-    4'b0111:begin
-	if(Zero==1)begin  
-  	LoadIR<=0; 
-	IncPC<=0; 
-	SelPC<=1;       //This should be connected to the MUX for PC. So 1 selects Immediate as input.
-	LoadPC<=1;      
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;  
-	SelALU<=0;  
-	stage<=2'b10; 
-    	end
-	else begin
-	//if ACC is not zero, then we just need to increment PC by 1.
-	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0;       
-	LoadPC<=0;      
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0; 
-	SelALU<=0;  
-	stage<=2'b10;
-	end
-    end
+wire LoadRegWire; //This is the Write Enable for RegisterFile. Controller can use this to signal
+          //register to write data to storage.
 
-    //Jump on Carry. Jump Reg.
-    4'b1000:begin
-	if(Carry==1)begin  
-  	LoadIR<=0; 
-	IncPC<=0; 
-	SelPC<=0;       
-	LoadPC<=1;      
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;  
-	SelALU<=0;  
-	stage<=2'b10; 
-    	end
-	else begin
-	//if ACC is not zero, then we just need to increment PC by 1.
-	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0;       
-	LoadPC<=0;      
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;  
-	SelALU<=0;  
-	stage<=2'b10;
-	end
-    end
+wire DumpRegWire; //This is used for Controller to signal register to dump its data out. The data
+          //as of now is only sent to ACC after.
 
-    //Jump on Cary. Jump Immediate.
-    4'b1010:begin
-	if(Carry==1)begin  
-  	LoadIR<=0; 
-	IncPC<=0; 
-	SelPC<=1;       
-	LoadPC<=1;      
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;  
-	SelALU<=0;  
-	stage<=2'b10; 
-    	end
-	else begin
-	//if ACC is not zero, then we just need to increment PC by 1.
-	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0;       
-	LoadPC<=0;      
-	LoadReg<=0;
-    	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;  
-	SelALU<=0;  
-	stage<=2'b10;
-	end
-    end
+wire [3:0] ImmediateDataWire;   //This is used for the controller to send out the immediate data.
+        //For the final product, this will be connected to MUX for both
+        //the ACC and ProgramCounter. For now though testing, it's connected
+        //directly to the ACC "in" port.
 
-    //NOP. For this instruction, only thing we do is increment the PC by 1.
-    4'b0000:begin  
-  	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-    	DumpReg<=0;          
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;
-	SelALU<=0;  
-	stage<=2'b10; 
-    end
+wire [7:0] Out_accDataWire;     //This is used to connect ACC to Reg. So when DumpAcc is turned on,
+        //the data stored in ACC will be sent to Reg.
 
-    //HALT. For this instruction, we dont do anything. Not even incrementing PC.
-    4'b1111:begin  
-  	LoadIR<=0; 
-	IncPC<=0; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-    	DumpReg<=0;          
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;
-	SelALU<=0; 
-	stage<=2'b10; 
-    end
+wire [7:0] out_regDataWire;     //This is used to connect Reg to ACC. So when DumpReg is turned on,
+        //the data stored in Reg will be sent to the MUX of the ACC.
 
-    //Add instruction
-    4'b0001:begin 
-  	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-	DumpReg<=1;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;
-	SelALU<=4'b0000;   //ALU Opcode is from alu_2.v module.
-	RegNumber<=Opcode[3:0];
-	stage<=2'b10; 
-    end
+wire [3:0] RegNumberWire;     //This is used for the controller to pass the register number to RegisterFile.
 
-    //Sub instruction
-    4'b0010:begin 
-  	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-	DumpReg<=1;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;
-	SelALU<=4'b0001;   
-	RegNumber<=Opcode[3:0];
-	stage<=2'b10; 
-    end
+wire SelAcc0Wire; //Two buses for the two MUXs before ACC register. See Data Path diagram in
+wire SelAcc1Wire; //Live Lec 5 6.pdf pg 44 to see the design.
 
-    //Nor instruction
-    4'b0011:begin 
-  	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-	DumpReg<=1;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;
-	SelALU<=4'b1000;   
-	RegNumber<=Opcode[3:0];
-	stage<=2'b10; 
-    end
+wire [7:0] alu_a, alu_b;     //Inputs to ALU
+wire [3:0] SelALUWire;       //ALU control signal from Controller
+wire [7:0] alu_op;           //Output of ALU
+wire alu_carry, alu_zero;    //ALU flags
 
-    //Below two instructions do not involve reg. Value will be coming from ACC.
-    //Then output is sent back to ACC.
-    //Right Shift instruction
-    4'b1100:begin 
-  	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;
-	SelALU<=4'b1100;   
-	stage<=2'b10; 
-    end
+//
+//Instantiating all the modules below and connecting all the ports.
+//
 
-    //Left Shift instruction
-    4'b1011:begin 
-  	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
-	LoadReg<=0;
-	DumpReg<=0;
-	LoadAcc<=0;
-	DumpAcc<=0;
-	SelAcc0<=0;
-	SelAcc1<=0;
-	SelALU<=4'b1101;   
-	stage<=2'b10; 
-    end
-   endcase
-   end
-   end
-//stage 2 bloc.
-//In this stage, we'll execute. Not sure what to put here yet.
-else if (stage==2'b10)begin
-stage<=2'b00;       //Resetting stages to 0. 
-end
-end
+//InstructionRegister
+IR IR1(.clk(clk), .reset(reset), .LoadIR(LoadIRWire), .instruction(instruction), .Opcode(OpcodeWire));
+
+//ACC
+ACC Acc1(
+  .clk(clk), .reset(reset), .LoadAcc(LoadAccWire), .DumpAcc(DumpAccWire), 
+  .in_alu(alu_op), .in_reg(out_regDataWire), .in_imm(ImmediateDataWire), 
+  .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .out_reg(Out_accDataWire), .out_alu(alu_a)
+);
+
+//RegisterFile
+RegisterFile RF1(
+  .clk(clk), .reset(reset), .LoadReg(LoadRegWire), .DumpReg(DumpRegWire), 
+  .RegNumber(RegNumberWire), .in(Out_accDataWire), .out(out_regDataWire), .out_alu(alu_b)
+);
+
+//Controller
+Controller Con1(
+  .clk(clk), .reset(reset), .Opcode(OpcodeWire), .Zero(alu_zero), .Carry(alu_carry),
+  .LoadIR(LoadIRWire), .LoadReg(LoadRegWire), .DumpReg(DumpRegWire), .LoadAcc(LoadAccWire), .DumpAcc(DumpAccWire), 
+  .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .SelALU(SelALUWire), 
+  .ImmediateData(ImmediateDataWire), .RegNumber(RegNumberWire)
+);
+
+//ALU
+alu ALU1(
+  .a(alu_a), .b(alu_b), .opcode(SelALUWire), .clk(clk), 
+  .op(alu_op), .carry(alu_carry), .zero(alu_zero)
+);
+
 endmodule
+
