@@ -50,6 +50,7 @@ wire [7:0] alu_a, alu_b;     //Inputs to ALU
 wire [3:0] SelALUWire;       //ALU control signal from Controller
 wire [7:0] alu_op;           //Output of ALU
 wire alu_carry, alu_zero;    //ALU flags
+wire alu_enableWire;         //ALU operation enable bit
 
 //
 //Instantiating all the modules below and connecting all the ports.
@@ -76,13 +77,13 @@ Controller Con1(
   .clk(clk), .reset(reset), .Opcode(OpcodeWire), .Zero(alu_zero), .Carry(alu_carry),
   .LoadIR(LoadIRWire), .LoadReg(LoadRegWire), .DumpReg(DumpRegWire), .LoadAcc(LoadAccWire), .DumpAcc(DumpAccWire), 
   .SelAcc0(SelAcc0Wire), .SelAcc1(SelAcc1Wire), .SelALU(SelALUWire), 
-  .ImmediateData(ImmediateDataWire), .RegNumber(RegNumberWire)
+  .ImmediateData(ImmediateDataWire), .RegNumber(RegNumberWire), .alu_enable(alu_enableWire)
 );
 
 //ALU
 alu ALU1(
   .a(alu_a), .b(alu_b), .opcode(SelALUWire), .clk(clk), 
-  .op(alu_op), .carry(alu_carry), .zero(alu_zero)
+  .op(alu_op), .carry(alu_carry), .zero(alu_zero), .alu_enable(alu_enableWire)
 );
 
 endmodule
