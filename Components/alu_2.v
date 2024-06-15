@@ -15,17 +15,17 @@ module alu (
                                      //Without it, because of the purposely introduced delay in the controller, ALU will keep executing
                                      //every high edge of CLK and ruins the correct result from the first execution.
         case (opcode)
-            4'b0000 : begin 
+            4'b0001 : begin 
                 {carry, op} = a + b; 
                 ACC = op;
                 $display("Addition operation"); 
             end
-            4'b0001 : begin 
+            4'b0010 : begin 
                 {carry, op} = a - b; 
                 ACC = op;
                 $display("Subtraction operation"); 
             end
-            4'b0010 : begin 
+            4'b1001 : begin 
                 op = a * b; 
                 ACC = op;
                 $display("Multiplication operation"); 
@@ -45,7 +45,7 @@ module alu (
                 ACC = op;
                 $display("Bit-wise AND operation"); 
             end
-            4'b0110 : begin 
+            4'b0011 : begin 
                 op = ~(a | b);   //Made this from a | b to ~(a|b). So from XOR to NOR. One of the requirements is to have a NOR operation.
                 ACC = op;
                 $display("Bit-wise NOR operation"); 
