@@ -1,9 +1,8 @@
-`timescale 1ns / 1ps
-
 module alu (
     input [7:0] a, b,          // inputs to ALU
     input [3:0] opcode,        // control signal for different operations
     input clk,                 // clock signal
+    input alu_enable,	       // ALU operation enable bit.
     output reg [7:0] op,       // output of ALU
     output reg carry,          // carry flag
     output reg zero            // zero flag
@@ -12,6 +11,9 @@ module alu (
     reg [7:0] ACC;             // Accumulator register
 
     always @(posedge clk) begin
+        if(alu_enable)begin          //This signal will be used by the controller to limit ALU operation to one operation per instruction.
+                                     //Without it, because of the purposely introduced delay in the controller, ALU will keep executing
+                                     //every high edge of CLK and ruins the correct result from the first execution.
         case (opcode)
             4'b0000 : begin 
                 {carry, op} = a + b; 
@@ -95,7 +97,7 @@ module alu (
             end
             default: op = 8'bXXXXXXXX;
         endcase
-
+       end
         // Set zero flag
         zero = (op == 8'd0);
 
