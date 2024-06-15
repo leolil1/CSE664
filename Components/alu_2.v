@@ -44,9 +44,9 @@ module alu (
                 $display("Bit-wise AND operation"); 
             end
             4'b0110 : begin 
-                op = a | b; 
+                op = ~(a | b);   //Made this from a | b to ~(a|b). So from XOR to NOR. One of the requirements is to have a NOR operation.
                 ACC = op;
-                $display("Bit-wise OR operation"); 
+                $display("Bit-wise NOR operation"); 
             end
             4'b0111 : begin 
                 op = a && b; 
