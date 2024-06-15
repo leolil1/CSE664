@@ -14,7 +14,8 @@ module Controller(
   output reg SelAcc1,
   output reg [3:0] SelALU,
   output reg [7:0] ImmediateData,
-  output reg [3:0] RegNumber
+  output reg [3:0] RegNumber,
+  output reg alu_enable
 );
 
   reg [1:0] stage;
@@ -40,6 +41,7 @@ module Controller(
       SelALU<=4'b0;
       ImmediateData<=8'b0;
       RegNumber<=4'b0;
+      alu_enable<=0;
       delay_count <= 4'b0100;  //Setting the delay to 4 cycles for now. If it's too much we can lower it.
     end
 
@@ -301,8 +303,9 @@ module Controller(
 	DumpAcc<=0;
 	SelAcc0<=0;
 	SelAcc1<=1;
-	SelALU<=4'b0000;   //ALU Opcode is from alu_2.v module.
+	SelALU<=4'b0001;         //ALU Opcode is from alu_2.v module.
 	RegNumber<=Opcode[3:0];
+	alu_enable<=1;
 	stage<=2'b10; 
     end
 
@@ -318,8 +321,9 @@ module Controller(
 	DumpAcc<=0;
 	SelAcc0<=0;
 	SelAcc1<=1;
-	SelALU<=4'b0001;   
+	SelALU<=4'b0010;   
 	RegNumber<=Opcode[3:0];
+	alu_enable<=1;
 	stage<=2'b10; 
     end
 
@@ -335,8 +339,9 @@ module Controller(
 	DumpAcc<=0;
 	SelAcc0<=0;
 	SelAcc1<=1;
-	SelALU<=4'b1000;   
+	SelALU<=4'b0011;   
 	RegNumber<=Opcode[3:0];
+	alu_enable<=1;
 	stage<=2'b10; 
     end
 
@@ -345,33 +350,37 @@ module Controller(
     //Right Shift instruction
     4'b1100:begin 
   	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
+	//IncPC<=1; 
+	//SelPC<=0; 
+	//LoadPC<=0; 
 	LoadReg<=0;
 	DumpReg<=0;
-	LoadAcc<=0;
+	LoadAcc<=1;
 	DumpAcc<=0;
 	SelAcc0<=0;
-	SelAcc1<=0;
+	SelAcc1<=1;
 	SelALU<=4'b1100;   
-	stage<=2'b10; 
+	RegNumber<=Opcode[3:0];
+	alu_enable<=1;  
+	stage<=2'b10;  
     end
 
     //Left Shift instruction
     4'b1011:begin 
   	LoadIR<=0; 
-	IncPC<=1; 
-	SelPC<=0; 
-	LoadPC<=0; 
+	//IncPC<=1; 
+	//SelPC<=0;
+	//LoadPC<=0;  
 	LoadReg<=0;
 	DumpReg<=0;
-	LoadAcc<=0;
+	LoadAcc<=1;
 	DumpAcc<=0;
 	SelAcc0<=0;
-	SelAcc1<=0;
+	SelAcc1<=1;
 	SelALU<=4'b1101;   
-	stage<=2'b10; 
+	RegNumber<=Opcode[3:0];
+	alu_enable<=1;   
+	stage<=2'b10;  
     end
    endcase
    end
@@ -379,6 +388,7 @@ module Controller(
 //stage 2 bloc.
 //In this stage, we'll execute. Not sure what to put here yet.
 else if (stage==2'b10)begin
+alu_enable<=0;      //Resetting ALU enable bit to 0. So same ALU operation won't run for the 2nd time on the same inputs.
 stage<=2'b00;       //Resetting stages to 0. 
 end
 end
